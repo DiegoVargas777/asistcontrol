@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Livewire\Volt\Volt;
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\reportController;
 
 use App\Http\Controllers\DashboardController;
 
@@ -29,6 +30,14 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/asistencia/salida', [AttendanceController::class, 'checkOut'])
         ->name('attendance.checkOut');
+
+    Route::get('/dashboard/reporte', [reportController::class, 'report'])
+        ->name('dashboard.report');
 });
+
+Route::get('/reporte', function () {
+    return view('reporte');
+})->name('reporte');
+
 
 require __DIR__ . '/auth.php';
