@@ -33,11 +33,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard/reporte', [reportController::class, 'report'])
         ->name('dashboard.report');
+
 });
 
-Route::get('/reporte', function () {
-    return view('reporte');
-})->name('reporte');
+
 
 
 require __DIR__ . '/auth.php';

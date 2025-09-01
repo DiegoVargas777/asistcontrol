@@ -3,49 +3,31 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Models\User; // <-- ESTA LÍNEA
+use App\Models\Attendance; // <-- si también usas Attendance
 
 class reportController extends Controller
 {
-    public function report()
-    {   
-        return view('reporte');
+    public function report(Request $request)
+    {
+        $query       = $request->input('query');
+        $fechaInicio = $request->input('fechaInicio');
+        $fechaFin    = $request->input('fechaFin');
+
+        // Lista de usuarios para el desplegable
+        $users = User::orderBy('name', 'asc')->get(['id', 'name']);
+
+        $attendances = Attendance::with('user')
+            ->when($query, function ($q) use ($query) {
+                $q->where('user_id', $query);
+            })
+            ->when($fechaInicio && $fechaFin, function ($q) use ($fechaInicio, $fechaFin) {
+                $q->whereBetween('date', [$fechaInicio, $fechaFin]);
+            })
+            ->orderBy('date', 'desc')
+            ->get();
+
+        return view('reporte', compact('attendances', 'users'));
     }
-
-    public function checkIn()
-{
-    $today = today()->toDateString();
-
-    // Verifica si ya existe un registro para hoy
-    $attendance = Attendance::firstOrCreate(
-        [
-            'user_id' => Auth::id(),
-            'date' => $today,
-        ],
-        [
-            'check_in' => now(),
-            'status' => 'pendiente', // Puedes ajustar el valor según tu lógica
-        ]
-    );
-
-    return back()->with('success', 'Entrada registrada');
-}
-
-public function checkOut()
-{
-    $attendance = Attendance::where('user_id', Auth::id())
-        ->where('date', today()->toDateString())
-        ->whereNull('check_out')
-        ->latest()
-        ->first();
-
-    if ($attendance) {
-        $attendance->update([
-            'check_out' => now(),
-            'status' => 'completo', // Marca como asistencia completa
-        ]);
-    }
-
-    return back()->with('success', 'Salida registrada');
-}
-
 }
