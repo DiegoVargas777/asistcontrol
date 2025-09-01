@@ -40,6 +40,13 @@
 
             {{-- Resultados --}}
             @if(isset($attendances) && $attendances->isNotEmpty())
+                <a href="{{ route('dashboard.report.pdf', request()->query()) }}" 
+                    class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 inline-block mb-4">
+                    Descargar PDF
+                </a>
+            @endif
+
+            @if(isset($attendances) && $attendances->isNotEmpty())
                 <div class="overflow-x-auto">
                     <table class="min-w-full border border-gray-700 rounded-lg shadow">
                         <thead class="bg-gray-800 text-gray-200">

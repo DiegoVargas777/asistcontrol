@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\User; // <-- ESTA LÍNEA
-use App\Models\Attendance; // <-- si también usas Attendance
+use App\Models\User; 
+use App\Models\Attendance;
+use Barryvdh\DomPDF\Facade\Pdf;
+
 
 class reportController extends Controller
 {
@@ -30,4 +32,24 @@ class reportController extends Controller
 
         return view('reporte', compact('attendances', 'users'));
     }
+
+    public function exportPdf(Request $request)
+{
+    $query       = $request->input('query');
+    $fechaInicio = $request->input('fechaInicio');
+    $fechaFin    = $request->input('fechaFin');
+
+    $attendances = Attendance::with('user')
+        ->when($query, fn($q) => $q->where('user_id', $query))
+        ->when($fechaInicio && $fechaFin, fn($q) => $q->whereBetween('date', [$fechaInicio, $fechaFin]))
+        ->orderBy('date', 'desc')
+        ->get();
+
+    $pdf = Pdf::loadView('report-pdf', compact('attendances'));
+
+    return $pdf->download('report_asistencia.pdf');
+}
+
+
+
 }

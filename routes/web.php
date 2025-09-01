@@ -33,6 +33,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard/reporte', [reportController::class, 'report'])
         ->name('dashboard.report');
+    Route::get('/dashboard/reporte', [reportController::class, 'report'])->name('dashboard.report');
+    Route::get('/dashboard/reporte/pdf', [reportController::class, 'exportPdf'])->name('dashboard.report.pdf');
+
 
 });
 
