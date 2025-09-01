@@ -3,53 +3,104 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Models\User; 
 use App\Models\Attendance;
 use Barryvdh\DomPDF\Facade\Pdf;
-
+use Carbon\Carbon;
 
 class reportController extends Controller
 {
     public function report(Request $request)
     {
-        $query       = $request->input('query');
+        $query       = $request->input('query');       // ID usuario
         $fechaInicio = $request->input('fechaInicio');
         $fechaFin    = $request->input('fechaFin');
+        $tipo        = $request->input('tipo');        // general, atrasos, salidas, inasistencias
 
-        // Lista de usuarios para el desplegable
         $users = User::orderBy('name', 'asc')->get(['id', 'name']);
 
         $attendances = Attendance::with('user')
-            ->when($query, function ($q) use ($query) {
-                $q->where('user_id', $query);
-            })
-            ->when($fechaInicio && $fechaFin, function ($q) use ($fechaInicio, $fechaFin) {
-                $q->whereBetween('date', [$fechaInicio, $fechaFin]);
-            })
+            ->when($query, fn($q) => $q->where('user_id', $query))
+            ->when($fechaInicio && $fechaFin, fn($q) => $q->whereBetween('date', [$fechaInicio, $fechaFin]))
+            ->when($tipo === 'atrasos', fn($q) => $q->where('check_in', '>', '09:30:00'))
+            ->when($tipo === 'salidas', fn($q) => $q->where('check_out', '<', '17:30:00'))
             ->orderBy('date', 'desc')
             ->get();
 
-        return view('reporte', compact('attendances', 'users'));
+        // Inasistencias: días sin registros
+        $inasistencias = collect();
+        if ($tipo === 'inasistencias' && $fechaInicio && $fechaFin && $query) {
+            $rangoFechas = collect();
+            $fecha = Carbon::parse($fechaInicio);
+            $fin   = Carbon::parse($fechaFin);
+
+            while ($fecha->lte($fin)) {
+                $rangoFechas->push($fecha->format('Y-m-d'));
+                $fecha->addDay();
+            }
+
+            $fechasConAsistencia = $attendances->pluck('date')->unique();
+            $fechasSinAsistencia = $rangoFechas->diff($fechasConAsistencia);
+
+            foreach ($fechasSinAsistencia as $dia) {
+                $inasistencias->push([
+                    'user_id' => $query,
+                    'name'    => optional(User::find($query))->name,
+                    'date'    => $dia
+                ]);
+            }
+        }
+
+        return view('reporte', compact('attendances', 'users', 'tipo', 'inasistencias'));
     }
 
     public function exportPdf(Request $request)
-{
-    $query       = $request->input('query');
-    $fechaInicio = $request->input('fechaInicio');
-    $fechaFin    = $request->input('fechaFin');
+    {
+        $query       = $request->input('query');
+        $fechaInicio = $request->input('fechaInicio');
+        $fechaFin    = $request->input('fechaFin');
+        $tipo        = $request->input('tipo');
 
-    $attendances = Attendance::with('user')
-        ->when($query, fn($q) => $q->where('user_id', $query))
-        ->when($fechaInicio && $fechaFin, fn($q) => $q->whereBetween('date', [$fechaInicio, $fechaFin]))
-        ->orderBy('date', 'desc')
-        ->get();
+        $attendances = Attendance::with('user')
+            ->when($query, fn($q) => $q->where('user_id', $query))
+            ->when($fechaInicio && $fechaFin, fn($q) => $q->whereBetween('date', [$fechaInicio, $fechaFin]))
+            ->when($tipo === 'atrasos', fn($q) => $q->where('check_in', '>', '09:30:00'))
+            ->when($tipo === 'salidas', fn($q) => $q->where('check_out', '<', '17:30:00'))
+            ->orderBy('date', 'desc')
+            ->get();
 
-    $pdf = Pdf::loadView('report-pdf', compact('attendances'));
+        $inasistencias = collect();
+        if ($tipo === 'inasistencias' && $fechaInicio && $fechaFin && $query) {
+            $rangoFechas = collect();
+            $fecha = Carbon::parse($fechaInicio);
+            $fin   = Carbon::parse($fechaFin);
 
-    return $pdf->download('report_asistencia.pdf');
-}
+            while ($fecha->lte($fin)) {
+                $rangoFechas->push($fecha->format('Y-m-d'));
+                $fecha->addDay();
+            }
 
+            $fechasConAsistencia = $attendances->pluck('date')->unique();
+            $fechasSinAsistencia = $rangoFechas->diff($fechasConAsistencia);
 
+            foreach ($fechasSinAsistencia as $dia) {
+                $inasistencias->push([
+                    'user_id' => $query,
+                    'name'    => optional(User::find($query))->name,
+                    'date'    => $dia
+                ]);
+            }
+        }
 
+        // Usar siempre la misma vista PDF y pasar todas las variables
+        $pdf = Pdf::loadView('report-pdf', [
+            'attendances'   => $attendances,
+            'inasistencias' => $inasistencias,
+            'fechaInicio'   => $fechaInicio,
+            'fechaFin'      => $fechaFin,
+            'tipo'          => $tipo
+        ]);
+
+        return $pdf->download('reporte_asistencia.pdf');
+    }
 }

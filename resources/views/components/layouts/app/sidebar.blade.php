@@ -3,7 +3,7 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-white dark:bg-zinc-800">
+    <body class="min-h-screen bg-gradient-to-br from-black via-zinc-900 to-zinc-800 text-white">
         <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
@@ -13,8 +13,10 @@
 
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('Platform')" class="grid">
-                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
-                    <flux:navlist.item icon="home" :href="route('dashboard.report')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Reportes') }}</flux:navlist.item>
+                    <flux:navlist.item icon="asistencia" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Asistencia') }}</flux:navlist.item>
+
+                    <flux:navlist.item icon="document-text" :href="route('dashboard.report')" :current="request()->routeIs('dashboard.report')" wire:navigate>{{ __('Reportes') }}</flux:navlist.item>
+
                 </flux:navlist.group>
             </flux:navlist>
 
@@ -74,7 +76,7 @@
                     </form>
                 </flux:menu>
             </flux:dropdown>
-        </flux:sidebar>
+        </flux:sidebar >
 
         <!-- Mobile User Menu -->
         <flux:header class="lg:hidden">
