@@ -14,7 +14,8 @@ class DashboardController extends Controller
 
         $user = Auth::user();
         $marcas = Attendance::where('user_id', $user->id)
-            ->orderBy('date', 'desc')
+            ->orderBy('date', 'asc') 
+            ->orderBy('check_in', 'asc')
             ->get();
 
         return view('dashboard', compact('user', 'marcas'));
