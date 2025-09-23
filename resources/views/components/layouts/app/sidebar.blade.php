@@ -19,18 +19,18 @@
                     {{ __('Usuarios') }}
                 </flux:navlist.item>
             </flux:navlist.group>
+            <flux:navlist.item icon="document-text" :href="route('dashboard.report')"
+                :current="request()->routeIs('dashboard.report')" wire:navigate>{{ __('Reportes') }}
+            </flux:navlist.item>
         @endrole('admin')
-        <flux:navlist variant="outline">
-            <flux:navlist.group :heading="__('Platform')" class="grid">
-                <flux:navlist.item icon="asistencia" :href="route('dashboard')"
-                    :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Asistencia') }}</flux:navlist.item>
-
-                <flux:navlist.item icon="document-text" :href="route('dashboard.report')"
-                    :current="request()->routeIs('dashboard.report')" wire:navigate>{{ __('Reportes') }}
-                </flux:navlist.item>
-
-            </flux:navlist.group>
-        </flux:navlist>
+        @role('empleado')
+            <flux:navlist variant="outline">
+                <flux:navlist.group :heading="__('Platform')" class="grid">
+                    <flux:navlist.item icon="asistencia" :href="route('dashboard')"
+                        :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Asistencia') }}</flux:navlist.item>
+                </flux:navlist.group>
+            </flux:navlist>
+        @endrole
 
         <flux:spacer />
 

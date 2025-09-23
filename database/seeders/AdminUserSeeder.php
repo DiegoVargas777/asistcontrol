@@ -23,6 +23,7 @@ class AdminUserSeeder extends Seeder
         Permission::firstOrCreate(['name' => 'editar usuario']);
         Permission::firstOrCreate(['name' => 'borrar usuario']);
 
+
         $admin->givePermissionTo(['crear usuario', 'editar usuario', 'borrar usuario']);
 
         // Crear usuario admin
