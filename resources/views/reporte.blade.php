@@ -1,12 +1,11 @@
 <x-layouts.app :title="__('Reporte de Asistencia')">
 
-    {{-- Contenedor del formulario y tabla --}}
     <div class="bg-gray-900 text-white p-6 rounded-lg shadow-lg">
 
         {{-- Formulario de búsqueda --}}
         <form action="{{ route('dashboard.report') }}" method="GET" class="mb-6 grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-                <label class="block text-sm font-medium">Seleccionar Usuario</label>
+                <label class="block text-sm font-medium text-white">Seleccionar Usuario</label>
                 <select name="query" class="mt-1 block w-full border rounded px-3 py-2 text-black">
                     <option value="">-- Todos --</option>
                     @foreach($users as $user)
@@ -18,19 +17,19 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium">Fecha Inicio</label>
+                <label class="block text-sm font-medium text-white">Fecha Inicio</label>
                 <input type="date" name="fechaInicio" value="{{ request('fechaInicio') }}"
                        class="mt-1 block w-full border rounded px-3 py-2 text-black">
             </div>
 
             <div>
-                <label class="block text-sm font-medium">Fecha Fin</label>
+                <label class="block text-sm font-medium text-white">Fecha Fin</label>
                 <input type="date" name="fechaFin" value="{{ request('fechaFin') }}"
                        class="mt-1 block w-full border rounded px-3 py-2 text-black">
             </div>
 
             <div>
-                <label class="block text-sm font-medium">Tipo de reporte</label>
+                <label class="block text-sm font-medium text-white">Tipo de reporte</label>
                 <select name="tipo" class="mt-1 block w-full border rounded px-3 py-2 text-black">
                     <option value="">General</option>
                     <option value="atrasos" {{ request('tipo') == 'atrasos' ? 'selected' : '' }}>Atrasos</option>
@@ -56,11 +55,11 @@
 
         {{-- Resultados --}}
         @if(request('tipo') === 'inasistencias')
-            <h3 class="text-lg font-bold mb-2">Reporte de Inasistencias</h3>
+            <h3 class="text-lg font-bold mb-2 text-white">Reporte de Inasistencias</h3>
             @if(isset($inasistencias) && $inasistencias->isNotEmpty())
                 <div class="overflow-x-auto">
                     <table class="min-w-full border border-gray-700 rounded-lg shadow">
-                        <thead class="bg-gray-800 text-gray-200">
+                        <thead class="bg-gray-800 text-white">
                             <tr>
                                 <th class="px-4 py-2 border border-gray-700">ID Usuario</th>
                                 <th class="px-4 py-2 border border-gray-700">Nombre</th>
@@ -79,15 +78,30 @@
                     </table>
                 </div>
             @else
-                <div class="mt-6 p-4 bg-yellow-200 border-l-4 border-yellow-500 text-yellow-900 rounded">
+                <div class="mt-6 p-4 bg-yellow-600 border-l-4 border-yellow-400 text-white rounded">
                     No se encontraron inasistencias en el rango seleccionado.
                 </div>
             @endif
         @else
+            {{-- Mensaje de horario de referencia --}}
+            @if(request('tipo') === 'atrasos')
+                <div class="mb-4 p-4 bg-blue-800 border-l-4 border-blue-500 text-white rounded">
+                    <strong>Horario de referencia:</strong> 09:30 a 17:30. Se consideran atrasos las entradas después de las 09:30.
+                </div>
+            @elseif(request('tipo') === 'salidas')
+                <div class="mb-4 p-4 bg-purple-800 border-l-4 border-purple-500 text-white rounded">
+                    <strong>Horario de referencia:</strong> 09:30 a 17:30. Se consideran salidas anticipadas las salidas antes de las 17:30.
+                </div>
+            @elseif(empty(request('tipo')))
+                <div class="mb-4 p-4 bg-gray-800 border-l-4 border-gray-500 text-white rounded">
+                    <strong>Reporte general:</strong> muestra todos los registros de asistencia sin aplicar filtros de horario.
+                </div>
+            @endif
+
             @if(isset($attendances) && $attendances->isNotEmpty())
                 <div class="overflow-x-auto">
                     <table class="min-w-full border border-gray-700 rounded-lg shadow">
-                        <thead class="bg-gray-800 text-gray-200">
+                        <thead class="bg-gray-800 text-white">
                             <tr>
                                 <th class="px-4 py-2 border border-gray-700">ID Usuario</th>
                                 <th class="px-4 py-2 border border-gray-700">Nombre</th>
@@ -112,7 +126,7 @@
                     </table>
                 </div>
             @elseif(isset($attendances))
-                <div class="mt-6 p-4 bg-yellow-200 border-l-4 border-yellow-500 text-yellow-900 rounded">
+                <div class="mt-6 p-4 bg-yellow-600 border-l-4 border-yellow-400 text-white rounded">
                     No se encontraron registros con los filtros aplicados.
                 </div>
             @endif
